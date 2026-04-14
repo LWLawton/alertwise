@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AlertWise Triage Report — 2026-04-13 21:06:27 UTC</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --card-bg: #1a1d27;
+  --border: #2a2d3e;
+  --text: #e2e8f0;
+  --text-muted: #8892a4;
+  --accent: #4fc3f7;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'Cascadia Code', 'Fira Code', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 0;
+}
+a { color: var(--accent); }
+
+/* HEADER */
+.aw-header {
+  background: linear-gradient(135deg, #0d1b2a 0%, #1a1d27 50%, #0d1b2a 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 32px 40px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.aw-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--accent);
+}
+.aw-logo span { color: #f59e0b; }
+.aw-meta { color: var(--text-muted); font-size: 0.85rem; text-align: right; }
+
+/* SUMMARY STATS */
+.summary-bar {
+  display: flex;
+  gap: 0;
+  padding: 0 40px;
+  margin: 24px 0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 24px;
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+}
+.stat-card .num { font-size: 2rem; font-weight: 800; }
+.stat-card .lbl { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase; }
+.stat-escalate { border-top: 3px solid #FF3B3B; }
+.stat-investigate { border-top: 3px solid #FF8C00; }
+.stat-monitor { border-top: 3px solid #2196F3; }
+.stat-suppress { border-top: 3px solid #6c757d; }
+.stat-benign { border-top: 3px solid #28a745; }
+.stat-total { border-top: 3px solid var(--accent); }
+
+/* CHART */
+.chart-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 0 40px 24px;
+  padding: 20px 24px;
+}
+.chart-title { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; }
+.chart-bars { display: flex; gap: 12px; align-items: flex-end; height: 80px; }
+.chart-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.chart-bar { width: 100%; border-radius: 4px 4px 0 0; transition: opacity 0.2s; cursor: default; min-height: 4px; }
+.chart-bar:hover { opacity: 0.8; }
+.chart-bar-lbl { font-size: 0.65rem; color: var(--text-muted); text-align: center; }
+.chart-bar-val { font-size: 0.75rem; font-weight: 700; }
+
+/* MAIN CONTENT */
+.content { padding: 0 40px 40px; }
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ALERT CARDS */
+.alert-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  transition: box-shadow 0.2s;
+}
+.alert-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+.alert-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.alert-num { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; min-width: 28px; }
+.alert-title { font-size: 1rem; font-weight: 700; flex: 1; }
+.badge-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.alert-meta {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.alert-meta code { font-family: var(--mono); color: var(--accent); font-size: 0.85em; }
+.alert-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 8px 0 12px;
+  line-height: 1.5;
+}
+.score-row { margin: 12px 0; font-size: 0.9rem; }
+.suppress-notice {
+  background: rgba(108,117,125,0.15);
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+.warn-notice {
+  background: rgba(255,140,0,0.1);
+  border: 1px solid #FF8C00;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+.ti-disabled { font-size: 0.82rem; color: var(--text-muted); margin: 8px 0; }
+
+/* Details / summary */
+details { margin: 8px 0; }
+summary {
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 6px 0;
+  user-select: none;
+  list-style: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before { content: "▶ "; font-size: 0.7em; }
+details[open] summary::before { content: "▼ "; }
+.reason-list { padding: 8px 0 4px 20px; }
+.reason-list li { font-size: 0.84rem; color: var(--text-muted); margin-bottom: 4px; }
+
+/* Tables */
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.82rem;
+}
+.detail-table th {
+  background: rgba(255,255,255,0.05);
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+.detail-table td {
+  padding: 5px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: top;
+  word-break: break-all;
+}
+.detail-table tr:last-child td { border-bottom: none; }
+.detail-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+/* Tuning section */
+.tuning-block {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+.tuning-block h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+.tuning-summary {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: rgba(79,195,247,0.05);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+.rec-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+.rec-item .ri-label { font-weight: 700; color: var(--text); }
+.rec-item .ri-rec { color: var(--text-muted); margin-top: 4px; }
+
+/* FOOTER */
+.aw-footer {
+  text-align: center;
+  padding: 24px 40px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+/* Print */
+@media print {
+  body { background: white; color: black; }
+  .aw-header, .summary-bar .stat-card, .alert-card, .tuning-block { border: 1px solid #ccc; }
+  details { display: block; }
+  summary { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="aw-header">
+  <div>
+    <div class="aw-logo">Alert<span>Wise</span></div>
+    <div style="font-size:0.82rem;color:#8892a4;margin-top:4px;">SIEM Alert Triage &amp; Noise Reduction Engine</div>
+  </div>
+  <div class="aw-meta">
+    Generated: 2026-04-13 21:06:27 UTC<br>
+    Total Alerts: <b>10</b>
+  </div>
+</div>
+
+<!-- SUMMARY STATS -->
+<div class="summary-bar">
+  <div class="stat-card stat-total"><div class="num">10</div><div class="lbl">Total</div></div>
+  <div class="stat-card stat-escalate"><div class="num" style="color:#FF3B3B">0</div><div class="lbl">Escalate</div></div>
+  <div class="stat-card stat-investigate"><div class="num" style="color:#FF8C00">1</div><div class="lbl">Investigate</div></div>
+  <div class="stat-card stat-monitor"><div class="num" style="color:#2196F3">5</div><div class="lbl">Monitor</div></div>
+  <div class="stat-card stat-suppress"><div class="num" style="color:#6c757d">3</div><div class="lbl">Suppressed</div></div>
+  <div class="stat-card stat-benign"><div class="num" style="color:#28a745">1</div><div class="lbl">Benign</div></div>
+</div>
+
+<!-- DISTRIBUTION CHART -->
+<div class="chart-section">
+  <div class="chart-title">Decision Distribution</div>
+  <div class="chart-bars" id="chartBars">
+    <!-- Filled by JS -->
+  </div>
+</div>
+
+<div class="content">
+  <div class="section-title">🚨 Alert Triage Results</div>
+  
+<div class="alert-card" id="alert-1" style="border-left:4px solid #e74c3c">
+  <div class="alert-header">
+    <span class="alert-num">#1</span>
+    <span class="alert-title">Credential Dumping via LSASS Memory Access</span>
+    <span class="badge-group">
+      <span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">High</span>
+      <span style="background:#2196F3;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">MONITOR</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00001</b></span>
+    <span>📡 CrowdStrike Falcon</span>
+    <span>🕐 2024-06-15T14:32:11Z</span>
+    <span>🛡 MITRE: <code>T1003.001</code> / Credential Access</span>
+    <span>Confidence: <b>Low</b></span>
+  </div>
+  <p class="alert-desc">Process mimikatz.exe accessed LSASS memory. Possible credential harvesting attempt detected on endpoint WKSTN-042.</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:29%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">29/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [High] → +28 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>Suspicious process detected: &#x27;lsass.exe&#x27; → +5 pts</li><li>Suspicious process detected: &#x27;mimikatz.exe&#x27; → +5 pts</li><li>Multiple entities (4) → +1 pt</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>ips</b></td><td>192.168.10.42</td></tr><tr><td><b>hostnames</b></td><td>WKSTN-042</td></tr><tr><td><b>usernames</b></td><td>jsmith</td></tr><tr><td><b>processes</b></td><td>lsass.exe, mimikatz.exe</td></tr><tr><td><b>domains</b></td><td>mimikatz.exe</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-2" style="border-left:4px solid #e74c3c">
+  <div class="alert-header">
+    <span class="alert-num">#2</span>
+    <span class="alert-title">Suspicious Outbound Beacon — Possible C2 Communication</span>
+    <span class="badge-group">
+      <span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">High</span>
+      <span style="background:#FF8C00;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">INVESTIGATE</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00002</b></span>
+    <span>📡 Palo Alto NGFW</span>
+    <span>🕐 2024-06-15T14:45:03Z</span>
+    <span>🛡 MITRE: <code>T1071.001</code> / Command and Control</span>
+    <span>Confidence: <b>Medium</b></span>
+  </div>
+  <p class="alert-desc">Endpoint DC-01 is generating periodic HTTPS connections to 185.220.101.47 every 60 seconds. Consistent with Cobalt Strike beacon behaviour.</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:42%;background:#f39c12;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#f39c12;">42/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [High] → +28 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>MITRE high-risk tactic [Command and Control] → +3 pts</li><li>Suspicious process detected: &#x27;beacon.exe&#x27; → +5 pts</li><li>High entity count (5) → +3 pts</li><li>External IP detected → +3 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>192.168.1.10</td></tr><tr><td><b>dest_ips</b></td><td>185.220.101.47</td></tr><tr><td><b>ips</b></td><td>185.220.101.47, 192.168.1.10</td></tr><tr><td><b>hostnames</b></td><td>DC-01</td></tr><tr><td><b>processes</b></td><td>beacon.exe</td></tr><tr><td><b>urls</b></td><td>https://185.220.101.47/jquery-3.3.1.min.js</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-3" style="border-left:4px solid #f39c12">
+  <div class="alert-header">
+    <span class="alert-num">#3</span>
+    <span class="alert-title">Encoded PowerShell Execution Detected</span>
+    <span class="badge-group">
+      <span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">Medium</span>
+      <span style="background:#28a745;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">BENIGN</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00003</b></span>
+    <span>📡 Windows Defender ATP</span>
+    <span>🕐 2024-06-15T15:01:55Z</span>
+    <span>🛡 MITRE: <code>T1059.001</code> / Execution</span>
+    <span>Confidence: <b>Medium</b></span>
+  </div>
+  <p class="alert-desc">PowerShell launched with -EncodedCommand flag from suspicious parent process. Command contained base64-encoded payload. Process: powershell.exe -NoP -sta -NonI -W Hidden -Enc JABzAD0ATgBlAHcALQBPAGIAagBlAGMAdAAgAEkATwAuAE0AZQ==</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:14%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">14/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [Medium] → +18 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>MITRE high-impact technique T1059.001 → +5 pts</li><li>Multiple entities (4) → +1 pt</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>ips</b></td><td>10.10.5.19</td></tr><tr><td><b>hostnames</b></td><td>WKSTN-019</td></tr><tr><td><b>usernames</b></td><td>alopez</td></tr><tr><td><b>processes</b></td><td>powershell.exe, winword.exe</td></tr><tr><td><b>domains</b></td><td>powershell.exe</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-4" style="border-left:4px solid #f39c12">
+  <div class="alert-header">
+    <span class="alert-num">#4</span>
+    <span class="alert-title">Multiple Authentication Failures — Possible Brute Force</span>
+    <span class="badge-group">
+      <span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">Medium</span>
+      <span style="background:#2196F3;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">MONITOR</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00004</b></span>
+    <span>📡 Splunk SIEM</span>
+    <span>🕐 2024-06-15T15:22:40Z</span>
+    <span>🛡 MITRE: <code>T1110.003</code> / Credential Access</span>
+    <span>Confidence: <b>Low</b></span>
+  </div>
+  <p class="alert-desc">150 failed login attempts detected against user admin@corp.com from IP 45.33.32.156 within 5 minutes. Possible password spray or brute force attack.</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:22%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">22/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [Medium] → +18 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>Multiple entities (4) → +1 pt</li><li>External IP detected → +3 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>45.33.32.156</td></tr><tr><td><b>dest_ips</b></td><td>10.0.0.5</td></tr><tr><td><b>ips</b></td><td>10.0.0.5, 45.33.32.156</td></tr><tr><td><b>hostnames</b></td><td>MAIL-SRV-01</td></tr><tr><td><b>usernames</b></td><td>admin</td></tr><tr><td><b>domains</b></td><td>corp.com</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-5" style="border-left:4px solid #f39c12">
+  <div class="alert-header">
+    <span class="alert-num">#5</span>
+    <span class="alert-title">Multiple Authentication Failures — Possible Brute Force</span>
+    <span class="badge-group">
+      <span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">Medium</span>
+      <span style="background:#6c757d;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">SUPPRESS</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00005</b></span>
+    <span>📡 Splunk SIEM</span>
+    <span>🕐 2024-06-15T15:30:00Z</span>
+    <span>🛡 MITRE: <code>T1110</code> / Credential Access</span>
+    <span>Confidence: <b>High</b></span>
+  </div>
+  <p class="alert-desc">87 failed login attempts against user service_account from IP 10.10.1.25 — internal scanner confirmed</p>
+  <div class="suppress-notice">⛔ <b>Suppressed:</b> Suppressed by: internal-scanner-ips, scanner-service-accounts, analyst-override:bob.jenkins@corp.com</div>
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:9%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">9/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>⛔ Suppressed: Suppressed by: internal-scanner-ips, scanner-service-accounts, analyst-override:bob.jenkins@corp.com</li><li>Base severity [Medium] → +18 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>Multiple entities (3) → +1 pt</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>10.10.1.25</td></tr><tr><td><b>dest_ips</b></td><td>10.0.0.5</td></tr><tr><td><b>ips</b></td><td>10.10.1.25</td></tr><tr><td><b>usernames</b></td><td>svc_nessus</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-6" style="border-left:4px solid #f39c12">
+  <div class="alert-header">
+    <span class="alert-num">#6</span>
+    <span class="alert-title">Multiple Authentication Failures — Possible Brute Force</span>
+    <span class="badge-group">
+      <span style="background:#f39c12;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">Medium</span>
+      <span style="background:#6c757d;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">SUPPRESS</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00006</b></span>
+    <span>📡 Splunk SIEM</span>
+    <span>🕐 2024-06-15T15:40:12Z</span>
+    <span>🛡 MITRE: <code>T1110</code> / Credential Access</span>
+    <span>Confidence: <b>High</b></span>
+  </div>
+  <p class="alert-desc">Recurring alert from Nessus scanner subnet — known noisy rule</p>
+  <div class="suppress-notice">⛔ <b>Suppressed:</b> Suppressed by: internal-scanner-ips, scanner-service-accounts</div>
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:9%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">9/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>⛔ Suppressed: Suppressed by: internal-scanner-ips, scanner-service-accounts</li><li>Base severity [Medium] → +18 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>Multiple entities (3) → +1 pt</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>10.10.1.26</td></tr><tr><td><b>dest_ips</b></td><td>10.0.0.6</td></tr><tr><td><b>usernames</b></td><td>svc_nessus</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-7" style="border-left:4px solid #c0392b">
+  <div class="alert-header">
+    <span class="alert-num">#7</span>
+    <span class="alert-title">Ransomware-like File Extension Mass Rename</span>
+    <span class="badge-group">
+      <span style="background:#c0392b;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">Critical</span>
+      <span style="background:#2196F3;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">MONITOR</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00007</b></span>
+    <span>📡 Carbon Black EDR</span>
+    <span>🕐 2024-06-15T16:00:05Z</span>
+    <span>🛡 MITRE: <code>T1486</code> / Impact</span>
+    <span>Confidence: <b>Low</b></span>
+  </div>
+  <p class="alert-desc">Process vssadmin.exe deleted shadow copies. 3,847 files renamed with .locked extension in under 90 seconds on file server FS-02.</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:36%;background:#f39c12;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#f39c12;">36/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [Critical] → +35 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>MITRE high-impact technique T1486 → +5 pts</li><li>MITRE high-risk tactic [Impact] → +3 pts</li><li>High entity count (5) → +3 pts</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>ips</b></td><td>192.168.50.10</td></tr><tr><td><b>hostnames</b></td><td>FS-02</td></tr><tr><td><b>usernames</b></td><td>SYSTEM</td></tr><tr><td><b>processes</b></td><td>explorer.exe, vssadmin.exe</td></tr><tr><td><b>file_hashes</b></td><td>7c5d9a1f3b8e2c6d4f0a9b7e5c3d1f8a2e4b6c0d9f7a5e3b1c8d6f4a2e0b8c6</td></tr><tr><td><b>domains</b></td><td>vssadmin.exe</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-8" style="border-left:4px solid #e74c3c">
+  <div class="alert-header">
+    <span class="alert-num">#8</span>
+    <span class="alert-title">Suspicious DNS TXT Record Queries — Possible DNS Tunnelling</span>
+    <span class="badge-group">
+      <span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">High</span>
+      <span style="background:#2196F3;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">MONITOR</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00008</b></span>
+    <span>📡 Palo Alto NGFW</span>
+    <span>🕐 2024-06-15T16:15:22Z</span>
+    <span>🛡 MITRE: <code>T1071.004</code> / Command and Control</span>
+    <span>Confidence: <b>Low</b></span>
+  </div>
+  <p class="alert-desc">Workstation WKSTN-088 is making unusually long DNS TXT queries to subdomain c2.evilexfil.xyz. Pattern consistent with DNScat2 or Iodine tunnelling.</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:22%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">22/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [High] → +28 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>MITRE high-risk tactic [Command and Control] → +3 pts</li><li>Multiple entities (4) → +1 pt</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>172.16.5.88</td></tr><tr><td><b>ips</b></td><td>172.16.5.88</td></tr><tr><td><b>hostnames</b></td><td>WKSTN-088</td></tr><tr><td><b>domains</b></td><td>c2.evilexfil.xyz, evilexfil.xyz</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-9" style="border-left:4px solid #27ae60">
+  <div class="alert-header">
+    <span class="alert-num">#9</span>
+    <span class="alert-title">Scheduled Vulnerability Scan Completed</span>
+    <span class="badge-group">
+      <span style="background:#27ae60;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">Low</span>
+      <span style="background:#6c757d;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">SUPPRESS</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00009</b></span>
+    <span>📡 Qualys VMDR</span>
+    <span>🕐 2024-06-15T16:30:00Z</span>
+    <span>🛡 MITRE: <code></code> / </span>
+    <span>Confidence: <b>High</b></span>
+  </div>
+  <p class="alert-desc">Weekly Qualys vulnerability scan completed against subnet 10.0.0.0/24. 142 new findings — review dashboard for details.</p>
+  <div class="suppress-notice">⛔ <b>Suppressed:</b> Suppressed by: internal-scanner-ips, scheduled-scan-alerts, analyst-override:alice.chen@corp.com</div>
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:0%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">0/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>⛔ Suppressed: Suppressed by: internal-scanner-ips, scheduled-scan-alerts, analyst-override:alice.chen@corp.com</li><li>Base severity [Low] → +8 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>10.0.0.0</td></tr><tr><td><b>ips</b></td><td>10.0.0.250, 10.0.0.0</td></tr><tr><td><b>hostnames</b></td><td>QUALYS-SCANNER</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+<div class="alert-card" id="alert-10" style="border-left:4px solid #e74c3c">
+  <div class="alert-header">
+    <span class="alert-num">#10</span>
+    <span class="alert-title">Unusually Large Data Upload to External Cloud Storage</span>
+    <span class="badge-group">
+      <span style="background:#e74c3c;color:#fff;padding:2px 8px;border-radius:3px;font-weight:600;font-size:0.75em;">High</span>
+      <span style="background:#2196F3;color:#fff;padding:3px 10px;border-radius:4px;font-weight:700;font-size:0.78em;letter-spacing:0.05em;">MONITOR</span>
+    </span>
+  </div>
+  <div class="alert-meta">
+    <span>🆔 <b>AW-00010</b></span>
+    <span>📡 Microsoft Sentinel</span>
+    <span>🕐 2024-06-15T17:00:00Z</span>
+    <span>🛡 MITRE: <code>T1567.002</code> / Exfiltration</span>
+    <span>Confidence: <b>Low</b></span>
+  </div>
+  <p class="alert-desc">User bob.jenkins uploaded 4.7 GB to mega.nz in a single session from internal host WKSTN-055. This exceeds the normal upload baseline by 9400%.</p>
+  
+  <div class="score-row">
+    <b>Risk Score:</b>&nbsp; <div style="display:inline-flex;align-items:center;gap:8px;"><div style="width:120px;background:#e9ecef;border-radius:4px;height:10px;overflow:hidden;"><div style="width:24%;background:#28a745;height:100%;border-radius:4px;"></div></div><span style="font-weight:700;color:#28a745;">24/100</span></div>
+  </div>
+
+  <details>
+    <summary>📊 Scoring Breakdown</summary>
+    <ul class="reason-list"><li>Base severity [High] → +28 pts</li><li>TI enrichment disabled — no enrichment score applied</li><li>MITRE high-risk tactic [Exfiltration] → +3 pts</li><li>High entity count (5) → +3 pts</li><li>All IPs are internal RFC1918 → -10 pts</li></ul>
+  </details>
+
+  <details><summary>🔍 Indicators</summary><table class='detail-table'><thead><tr><th>Type</th><th>Values</th></tr></thead><tbody><tr><td><b>src_ips</b></td><td>192.168.20.55</td></tr><tr><td><b>ips</b></td><td>192.168.20.55</td></tr><tr><td><b>hostnames</b></td><td>WKSTN-055</td></tr><tr><td><b>usernames</b></td><td>bob.jenkins</td></tr><tr><td><b>domains</b></td><td>mega.nz, bob.jenkins</td></tr><tr><td><b>urls</b></td><td>https://mega.nz/upload</td></tr></tbody></table></details>
+
+  <p class='ti-disabled'><em>TI enrichment disabled or no results</em></p>
+</div>
+
+
+  <div class="section-title">🔧 SIEM Tuning Recommendations</div>
+  <div class="tuning-summary">Processed 10 alert(s): 0 ESCALATE, 1 INVESTIGATE, 3 SUPPRESS. Noise ratio: 30% of alerts were suppressed. Noisiest rule: &#x27;AUTH-FAIL-BURST&#x27; fired 3 time(s) (avg score 13.3). 1 indicator(s) appear frequently — consider whitelisting after verification.</div>
+<div class="tuning-block"><h3>🔊 Noisy Rules</h3><div class="rec-item"><div class="ri-label">📣 AUTH-FAIL-BURST — fired <b>3×</b>, suppressed <b>2×</b>, avg score <b>13.3/100</b></div><div class="ri-rec">→ Frequent suppression. Consider adding a contextual whitelist rule.</div></div></div>
+<div class="tuning-block"><h3>✅ Whitelist Suggestions</h3><div class="rec-item"><div class="ri-label">📋 [IP] 10.0.0.5 — seen 3×</div><div class="ri-rec">→ IP 10.0.0.5 appears in 3 alerts — verify and whitelist if internal/benign</div></div></div>
+</div>
+
+<div class="aw-footer">
+  AlertWise v1.0.0 · Open Source SIEM Triage Engine · Report generated 2026-04-13 21:06:27 UTC
+</div>
+
+<script>
+// Render distribution bar chart
+const labels = ["ESCALATE", "INVESTIGATE", "MONITOR", "SUPPRESS", "BENIGN"];
+const values = [0, 1, 5, 3, 1];
+const colors = ["#FF3B3B", "#FF8C00", "#2196F3", "#6c757d", "#28a745"];
+const maxVal = Math.max(...values, 1);
+const container = document.getElementById('chartBars');
+labels.forEach((lbl, i) => {
+  const heightPct = Math.round((values[i] / maxVal) * 100);
+  const wrap = document.createElement('div');
+  wrap.className = 'chart-bar-wrap';
+  wrap.innerHTML = `
+    <span class="chart-bar-val" style="color:${colors[i]}">${values[i]}</span>
+    <div class="chart-bar" style="height:${Math.max(heightPct, 5)}%;background:${colors[i]};" title="${lbl}: ${values[i]}"></div>
+    <span class="chart-bar-lbl">${lbl}</span>
+  `;
+  container.appendChild(wrap);
+});
+</script>
+</body>
+</html>
